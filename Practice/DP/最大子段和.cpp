@@ -4,7 +4,7 @@
 using namespace std;
 
 int MaxSum(vector<int>& nums) {
-    int sum = nums[0], b = nums[0];
+    int sum = nums[0], b = nums[0]; //处理负数的情况
     for(int i = 1; i < nums.size(); i ++) {
         if(b > 0)
             b += nums[i];
