@@ -3,9 +3,9 @@
 
 using namespace std;
 
-int MaxSum(vector<int>& nums, int n) {
-    int sum = 0, b = 0;
-    for(int i = 1; i <= nums.size(); i ++) {
+int MaxSum(vector<int>& nums) {
+    int sum = nums[0], b = nums[0];
+    for(int i = 1; i < nums.size(); i ++) {
         if(b > 0)
             b += nums[i];
         else 
@@ -16,6 +16,18 @@ int MaxSum(vector<int>& nums, int n) {
     return sum;
 }
 
+// int  main() {
+//     int n;
+//     scanf("%d", &n);;
+//     vector<int> a(n);
+
+//     for(int i = 0; i < n; i ++) {
+//         scanf("%d", &a[i]);
+//     }
+
+//     printf("%d\n", MaxSum(a));
+//     return 0;
+// }
 int  main() {
     int n;
     cin >> n;
@@ -25,7 +37,7 @@ int  main() {
         cin >> a[i];
     }
 
-    cout << MaxSum(a, n) << endl;
+    cout << MaxSum(a) << endl;
 
     return 0;
 }
