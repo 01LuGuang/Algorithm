@@ -2,21 +2,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-//进程状态枚举
-typedef enum {Ready, Running, Finished} State;
+// 进程状态枚举
+typedef enum { READY, RUNNING, FINISHED } State;
 
-//PCB进程控制块结构体
+// PCB（进程控制块）结构体
 typedef struct PCB {
-    char name[10]; //进程名
-    int arrival_time; //到达时间
-    int burst_time; //服务时间
-    int start_time; //开始时间
-    int finish_time; //完成时间
-    State state; //进程当前状态
-    struct PCB* next; //指向下一个进程的链表指针
+    char name[10];       // 进程名称
+    int arrival_time;    // 到达时间
+    int burst_time;      // 执行时间
+    int start_time;      // 实际开始执行的时间
+    int finish_time;     // 完成时间
+    State state;         // 当前状态
+    struct PCB* next;    // 链表指针
 } PCB;
 
-//进程调度函数，使用FCFS算法
+// 函数声明
+void insert_process(PCB** head, PCB* new_pcb);
+void fcfs_schedule(PCB* head);
+void print_processes(PCB* head);
+
 /**
  * @brief 插入新进程到就绪队列中（按到达时间排序）
  * 
@@ -25,11 +29,11 @@ typedef struct PCB {
  */
 void insert_process(PCB** head, PCB* new_pcb) {
     if (*head == NULL || new_pcb->arrival_time < (*head)->arrival_time) {
-        new_pcb = *head;
+        new_pcb->next = *head;
         *head = new_pcb;
-    }else {
+    } else {
         PCB* current = *head;
-        while(current->next != NULL && current->next->arrival_time < new_pcb->arrival_time) {
+        while (current->next != NULL && current->next->arrival_time <= new_pcb->arrival_time) {
             current = current->next;
         }
         new_pcb->next = current->next;
@@ -43,30 +47,31 @@ void insert_process(PCB** head, PCB* new_pcb) {
  * @param head 就绪队列头指针
  */
 void fcfs_schedule(PCB* head) {
-    int current_time = 0; //当前时间
-    PCB* current = head; //当前进程指针
-    
-    printf("\n==== FCFS 调度开始 ====\n");
+    int current_time = 0;
+    PCB* current = head;
 
-    while(current != NULL) {
-        //如果当前时间小于到达时间，需要空等
+    printf("\n=== FCFS 调度开始 ===\n");
+
+    while (current != NULL) {
+        // 如果当前时间小于到达时间，需要空等
         if (current_time < current->arrival_time) {
-            current_time = current->arrival_time; //更新当前时间
+            current_time = current->arrival_time;
         }
 
-        current->start_time = current_time; //设置开始时间
-        current->state = Running;
-        printf("进程 %s 开始执行， 开始时间： %d\n", current->name, current_time);
+        current->start_time = current_time;                   // 设置进程开始时间
+        current->state = RUNNING;
+        printf("调度进程 %s 开始运行，时间: %d\n", current->name, current_time);
 
-        current_time += current->burst_time; //更新当前时间
-        current->finish_time = current_time; //设置完成时间
-        current->state = Finished;
-        printf("进程 %s 执行完成， 完成时间： %d\n", current->name, current_time);
+        current_time += current->burst_time;                  // 模拟运行
+        current->finish_time = current_time;                  // 记录完成时间
+        current->state = FINISHED;
 
-        current = current->next; //继续调用下一个进程
+        printf("进程 %s 完成运行，时间: %d\n", current->name, current_time);
+
+        current = current->next;                              // 继续调度下一个进程
     }
 
-    printf("==== FCFS 调度结束 ====\n");
+    printf("=== FCFS 调度结束 ===\n\n");
 }
 
 /**
@@ -74,53 +79,51 @@ void fcfs_schedule(PCB* head) {
  * 
  * @param head 就绪队列头指针
  */
-void print_processes(PCB** head) {
-    PCB* current = *head;
+void print_processes(PCB* head) {
+    PCB* current = head;
 
-    printf("\n==== 进程调度信息 ====\n");
-    printf("进程名\t到达时间\t服务时间\t开始时间\t结束时间\n");
-    while(current != NULL) {
-        printf("%s\t%d\t\t%d\t\t%d\t\t%d\t\n",
+    printf("进程名\t到达时间\t运行时间\t开始时间\t结束时间\n");
+    while (current != NULL) {
+        printf("%s\t%d\t\t%d\t\t%d\t\t%d\n",
             current->name,
             current->arrival_time,
             current->burst_time,
             current->start_time,
             current->finish_time);
-
         current = current->next;
     }
 }
 
-
 int main() {
-    PCB* ready_queue = NULL; //就绪队列头指针,初始化为空
-
+    PCB* ready_queue = NULL; // 初始化就绪队列为空
     int n;
-    printf("请输入进程数量：");
+
+    printf("请输入进程数量: ");
     scanf("%d", &n);
 
-    for(int i = 0; i < n; i ++) {
-        PCB* new_pcb = (PCB*)malloc(sizeof(PCB)); //动态分配内存
-        printf("\n请输入第 %d 个进程的名称：", i + 1);
+    // 循环输入每个进程的信息
+    for (int i = 0; i < n; ++i) {
+        PCB* new_pcb = (PCB*)malloc(sizeof(PCB)); // 动态分配PCB结构
+        printf("\n输入第 %d 个进程的名称: ", i + 1);
         scanf("%s", new_pcb->name);
-        printf("请输入到达时间：");
+        printf("输入到达时间: ");
         scanf("%d", &new_pcb->arrival_time);
-        printf("请输入运行时间：");
+        printf("输入运行时间: ");
         scanf("%d", &new_pcb->burst_time);
 
-        new_pcb->state = Ready;
+        new_pcb->state = READY;
         new_pcb->next = NULL;
 
-        insert_process(&ready_queue, new_pcb); //插入新进程到就绪队列中
+        insert_process(&ready_queue, new_pcb); // 插入到就绪队列中
     }
 
-    //调度并打印
+    // 调度与打印
     fcfs_schedule(ready_queue);
-    print_processes(&ready_queue);
+    print_processes(ready_queue);
 
-    //释放内存
+    // 释放内存
     PCB* current = ready_queue;
-    while(current != NULL) {
+    while (current != NULL) {
         PCB* temp = current;
         current = current->next;
         free(temp);

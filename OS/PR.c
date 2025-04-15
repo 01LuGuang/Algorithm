@@ -2,30 +2,30 @@
 #include <stdlib.h>
 #include <string.h>
 
-//定义进程状态
-typedef enum {Ready, Running, Finished} State;
+// 定义进程状态
+typedef enum { READY, RUNNING, FINISHED } State;
 
-//PCB进程控制块结构体
+// PCB结构体定义
 typedef struct PCB {
-    char name[10]; //进程名
-    int priority; //优先级
-    int arrival_time; //到达时间
-    int burst_time; //服务时间
-    int start_time; //开始时间
-    int finish_time; //完成时间
-    State state; //进程当前状态
-    struct PCB* next; //指向下一个进程的链表指针
+    char name[10];         // 进程名称
+    int arrival_time;      // 到达时间
+    int burst_time;        // 执行时间
+    int priority;          // 优先级（数值越小，优先级越高）
+    int start_time;        // 开始时间
+    int finish_time;       // 完成时间
+    State state;           // 状态
+    struct PCB* next;
 } PCB;
 
 /**
  * @brief 插入进程到链表末尾（保持简单插入顺序）
  */
 void insert_process(PCB** head, PCB* new_pcb) {
-    if(*head == NULL) {
+    if (*head == NULL) {
         *head = new_pcb;
     } else {
         PCB* current = *head;
-        while(current->next != NULL) {
+        while (current->next != NULL) {
             current = current->next;
         }
         current->next = new_pcb;
@@ -35,19 +35,17 @@ void insert_process(PCB** head, PCB* new_pcb) {
 /**
  * @brief 非抢占式优先级调度算法实现
  */
-
 void priority_schedule(PCB* head) {
     int current_time = 0;
+    printf("\n=== 优先级调度（PR）开始 ===\n");
 
-    printf("\n==== 优先级调度(PR)开始 ====\n");
-
-    while(1) {
+    while (1) {
         PCB* current = head;
-        PCB* highest_priority_proc = NULL; //指向优先级最高的进程
+        PCB* highest_priority_proc = NULL;
 
-        //遍历寻找当前时间下Ready且优先级最高的进程
-        while(current != NULL) {
-            if(current->state == Ready && current->arrival_time <= current_time) {
+        // 寻找当前时间下 READY 且优先级最高的进程
+        while (current != NULL) {
+            if (current->state == READY && current->arrival_time <= current_time) {
                 if (highest_priority_proc == NULL || current->priority < highest_priority_proc->priority) {
                     highest_priority_proc = current;
                 }
@@ -55,25 +53,26 @@ void priority_schedule(PCB* head) {
             current = current->next;
         }
 
-        //如果没找到合适的进程，继续增加时间寻找
-        if(highest_priority_proc == NULL) {
+        // 如果没有找到合适进程，则时间+1继续寻找
+        if (highest_priority_proc == NULL) {
             current_time++;
-            if(current_time > 1000) break; //防止死循环
+            if (current_time > 1000) break; // 防止死循环
             continue;
         }
 
-        //启动进程
+        // 启动该进程
         highest_priority_proc->start_time = current_time;
-        highest_priority_proc->state = Running;
-        printf("调度进程 %s （优先级： %d） 开始执行， 时间： %d\n",
+        highest_priority_proc->state = RUNNING;
+        printf("调度进程 %s（优先级: %d）开始运行，时间: %d\n", 
             highest_priority_proc->name, highest_priority_proc->priority, current_time);
 
         current_time += highest_priority_proc->burst_time;
         highest_priority_proc->finish_time = current_time;
-        highest_priority_proc->state = Finished;
-        printf("进程 %s 完成运行， 时间：%d\n", highest_priority_proc->name, current_time);
+        highest_priority_proc->state = FINISHED;
+        printf("进程 %s 完成运行，时间: %d\n", highest_priority_proc->name, current_time);
     }
-    printf("==== 优先级调度(PR)结束 ====\n");
+
+    printf("=== 优先级调度结束 ===\n\n");
 }
 
 /**
@@ -94,40 +93,40 @@ void print_processes(PCB* head) {
     }
 }
 
-
 int main() {
     PCB* ready_queue = NULL;
     int n;
 
-    printf("请输入进程数量：");
+    printf("请输入进程数量: ");
     scanf("%d", &n);
 
-    for(int i = 0; i < n; i ++) {
+    for (int i = 0; i < n; ++i) {
         PCB* new_pcb = (PCB*)malloc(sizeof(PCB));
-        printf("\n请输入第 %d 个进程的名称：", i + 1);
-        scanf("%s", &new_pcb->name);
-        printf("请输入到达时间：");
+        printf("\n输入第 %d 个进程的名称: ", i + 1);
+        scanf("%s", new_pcb->name);
+        printf("输入到达时间: ");
         scanf("%d", &new_pcb->arrival_time);
-        printf("请输入服务时间：");
+        printf("输入运行时间: ");
         scanf("%d", &new_pcb->burst_time);
-        printf("请输入优先级：");
+        printf("输入优先级（数值越小优先级越高）: ");
         scanf("%d", &new_pcb->priority);
 
-        new_pcb->state = Ready; //初始状态为就绪
+        new_pcb->state = READY;
         new_pcb->next = NULL;
 
-        insert_process(&ready_queue, new_pcb); //插入新进程到就绪队列中
+        insert_process(&ready_queue, new_pcb);
     }
 
-    priority_schedule(ready_queue); //调用优先级调度函数
-    print_processes(ready_queue); //打印进程调度结果
+    priority_schedule(ready_queue);
+    print_processes(ready_queue);
 
-    //释放内存
+    // 清理内存
     PCB* current = ready_queue;
-    while(current != NULL) {
+    while (current != NULL) {
         PCB* temp = current;
         current = current->next;
-        free(temp); //释放每个进程的内存
+        free(temp);
     }
+
     return 0;
 }
