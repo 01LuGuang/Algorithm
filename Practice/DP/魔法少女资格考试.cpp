@@ -1,4 +1,5 @@
-//最长严格递增子序列
+//最长严格递增子序列问题
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
