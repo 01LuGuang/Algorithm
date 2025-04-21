@@ -8,15 +8,15 @@ int main() {
     double x;
     cin >> x;
 
-    int k = x / 2; // 找到最大的k，使2^k <= x
-    double left = pow(2, k), mid = pow(2, k) + 1, right = pow(2, k) + 2;
+    int k = floor(x / 2); 
     double ans;
-    if (x >= pow(2, k) && x <= pow(2, k) + 1) {
+    if (x >= 2 * k && x <= 2 * k + 1) {
         ans = x - floor(x);
-    } else {
+    } else if(x >= 2 * k + 1 && x <= 2 * k + 2){
         ans = floor(x) - x + 1;
     }
-    cout << fixed << setprecision(2) << ans << endl;
+    
+    printf("%.2f", ans);
     
     return 0;
 }
