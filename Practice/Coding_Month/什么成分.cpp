@@ -1,40 +1,41 @@
-#include <iostream>
-#include <unordered_map>
-#include <string>
-#include <algorithm>
-using namespace std;
+//这题挺有意思的，我的思考方式第一次不好解决这个问题
 
-// 生成一个数的最小旋转值
-int min_rotation(int x) {
-    string s = to_string(x);
-    string min_s = s;
-    for (size_t i = 1; i < s.size(); ++i) {
-        rotate(s.begin(), s.begin() + 1, s.end()); // 把最前面一个字符转到末尾
-        if (s[0] != '0')  // 不能以0开头的旋转才合法
-            min_s = min(min_s, s);
-    }
-    return stoi(min_s);
-}
+#include <iostream>
+using namespace std;
 
 int main() {
     int L, R;
     cin >> L >> R;
-
-    unordered_map<int, int> freq;
-
-    // 统计每个旋转最小值出现的次数
-    for (int x = L; x <= R; ++x) {
-        int key = min_rotation(x);
-        freq[key]++;
-    }
-
-    long long result = 0;
-    for (const auto& [key, count] : freq) {
-        if (count >= 2) {
-            result += 1LL * count * (count - 1) / 2;
+    int cnt = 0;
+    for (int a = L; a < R; ++a) {
+        int x = a, len = 0, pow10 = 1;
+        while (x) {
+            len++;
+            pow10 *= 10;
+            x /= 10;
+        }
+        pow10 /= 10;
+        int b = a;
+        // 用一个简单的数组记录本 a 已经统计过的 b
+        int seen[10] = {0}; // 最多10位数
+        for (int i = 1; i < len; ++i) {
+            int last = b % pow10;
+            int first = b / pow10;
+            b = last * 10 + first;
+            // 位数不变，且 b > a 且 b <= R
+            if (b > a && b <= R) {
+                // 检查 b 是否已经统计过
+                bool flag = false;
+                for (int j = 0; j < i; ++j) {
+                    if (seen[j] == b) flag = true;
+                }
+                if (!flag) {
+                    seen[i - 1] = b;
+                    cnt++;
+                }
+            }
         }
     }
-
-    cout << result << endl;
+    cout << cnt << endl;
     return 0;
 }
