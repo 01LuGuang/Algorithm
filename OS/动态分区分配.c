@@ -8,10 +8,10 @@ typedef enum { FIRST_FIT = 1, BEST_FIT, WORST_FIT } FitAlgorithm;
 
 // 内存分区结构体
 typedef struct Block {
-    int start;
-    int size;
-    int is_allocated;
-    struct Block *next;
+    int start;              // 分区起始地址
+    int size;               // 分区大小
+    int is_allocated;       // 是否已分配
+    struct Block *next;     // 下一个分区
 } Block;
 
 Block *free_list = NULL;     // 空闲分区表
@@ -31,8 +31,8 @@ void init_memory() {
 
 // 打印分区状态
 void print_memory(Block *list, const char *type) {
-    printf("**********%s Table************\n", strcmp(type, "Free") == 0 ? "Unallocated" : "Allocated");
-    printf("index***address***end****size****\n");
+    printf("==========%s Table==========\n", strcmp(type, "Free") == 0 ? "Unallocated" : "Allocated");
+    printf("| Index | Address | End | Size |\n");
     printf("---------------------------------\n");
     Block *cur = list;
     int index = 0;
@@ -51,11 +51,11 @@ void insert_allocated(Block *block) {
     allocated_list = new_block;
 }
 
-// 移除已分配表中对应起始地址的块
-Block* remove_allocated(int start) {
+// 从已分配分区表中移除指定分区（按起始地址和大小）
+Block* remove_allocated(int start, int size) {
     Block *prev = NULL, *cur = allocated_list;
     while (cur) {
-        if (cur->start == start) {
+        if (cur->start == start && cur->size == size) {
             if (prev) prev->next = cur->next;
             else allocated_list = cur->next;
             return cur;
@@ -84,15 +84,17 @@ Block* find_fit(Block **prev, int size) {
 
     while (cur) {
         if (!cur->is_allocated && cur->size >= size) {
-            //选取不同的算法
+            // 首次适应：找到第一个合适的空闲块
             if (current_alg == FIRST_FIT) {
                 *prev = prev_ptr;
                 return cur;
+            // 最佳适应：找到最小且能用的空闲块
             } else if (current_alg == BEST_FIT) {
                 if (!best || cur->size < best->size) {
                     best = cur;
                     best_prev = prev_ptr;
                 }
+            // 最坏适应：找到最大的空闲块
             } else if (current_alg == WORST_FIT) {
                 if (!worst || cur->size > worst->size) {
                     worst = cur;
@@ -125,7 +127,8 @@ void allocate_memory(int size) {
         printf("No suitable block found.\n");
         return;
     }
-
+    
+    // 如果空闲块大于需求，分割空闲块
     if (fit->size > size) {
         split_block(fit, size);
     }
@@ -156,8 +159,9 @@ void merge_free_blocks() {
 }
 
 // 释放内存
-void deallocate_memory(int address) {
-    Block *reclaim = remove_allocated(address);
+void deallocate_memory(int address, int size) {
+    // 从已分配表中移除对应分区
+    Block *reclaim = remove_allocated(address, size);
     if (!reclaim) {
         printf("Block not found.\n");
         return;
@@ -179,13 +183,14 @@ void deallocate_memory(int address) {
         cur->next = reclaim;
     }
 
+    // 合并相邻空闲块
     merge_free_blocks();
-    printf("Deallocation Success! ADDRESS= %d\n", address);
+    printf("Deallocation Success! ADDRESS= %d%d\n", address, size);
 }
 
 // 设置分配算法
 void set_algorithm() {
-    printf("Select allocation algorithm: 1.First Fit  2.Best Fit  3.Worst Fit\n");
+    printf("Select allocation algorithm(Enter the number): 1. First Fit  2. Best Fit  3. Worst Fit\n");
     int alg;
     scanf("%d", &alg);
     if (alg >= 1 && alg <= 3) {
@@ -198,7 +203,7 @@ void set_algorithm() {
 }
 
 
-// 主函数
+
 int main() {
     init_memory();
     set_algorithm();
@@ -218,9 +223,9 @@ int main() {
             scanf("%d", &size);
             allocate_memory(size);
         } else if (op == 'r') {
-            printf("Input address to reclaim: ");
-            scanf("%d", &addr);
-            deallocate_memory(addr);
+            printf("Input address and size to reclaim: ");
+            scanf("%d%d", &addr, &size);
+            deallocate_memory(addr, size);
         } else {
             break;
         }
