@@ -21,31 +21,42 @@ public:
 
 
 
+**5.4**
+
+[1128. 等价多米诺骨牌对的数量](https://leetcode.cn/problems/number-of-equivalent-domino-pairs/)
+
 ```C++
 class Solution {
 public:
-    int minDominoRotations(vector<int>& tops, vector<int>& bottoms) {
-        auto min_rot = [&](int target) -> int {
-            int to_top = 0, to_bottom = 0;
-            for (int i = 0; i < tops.size(); i++) {
-                int x = tops[i], y = bottoms[i];
-                if (x != target && y != target) {
-                    return INT_MAX;
-                }
-                if (x != target) {
-                    to_top++; // 把 y 旋转到上半
-                } else if (y != target) {
-                    to_bottom++; // 把 x 旋转到下半
-                }
-            }
-            return min(to_top, to_bottom);
-        };
-
-        int ans = min(min_rot(tops[0]), min_rot(bottoms[0]));
-        return ans == INT_MAX ? -1 : ans;
+    int numEquivDominoPairs(vector<vector<int>>& dominoes) {
+        int ans = 0;
+        map<pair<int, int>, int> dict;
+        for(auto& d : dominoes) {
+            auto key = minmax(d[0], d[1]);
+            ans += dict[key]++;
+        }
+        return ans;
     }
 };
+```
 
 
+
+哈希表这么好用吗hhh
+
+[1512. 好数对的数目](https://leetcode.cn/problems/number-of-good-pairs/)
+
+```C++
+class Solution {
+public:
+    int numIdenticalPairs(vector<int>& nums) {
+        int ans = 0;
+        unordered_map<int, int> cnt;
+        for(int x : nums) {
+            ans += cnt[x]++;
+        }
+        return ans;
+    }
+};
 ```
 
