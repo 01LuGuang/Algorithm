@@ -12,8 +12,8 @@
 int page_sequence[INSTRUCTION_NUM];
 
 // 页面队列，用于FIFO
-int page_queue[MAX_FRAMES];
-int queue_front, queue_rear;
+int page_queue[MAX_FRAMES];     // FIFO队列，存放当前内存中的页面号
+int queue_front, queue_rear;    // 队列头尾指针
 
 // 判断页面是否在内存中（返回索引或-1）
 int in_memory(int page, int memory[], int frame_count) {
@@ -58,7 +58,7 @@ void generate_page_sequence() {
 }
 
 // FIFO 页面置换算法
-float simulate_fifo(int frame_count) {
+float FIFO(int frame_count) {
     int memory[frame_count];
     int page_faults = 0;
     int page_count = 0;
@@ -106,7 +106,7 @@ int main() {
     generate_page_sequence();
 
     for (int frames = MIN_FRAMES; frames <= MAX_FRAMES; frames++) {
-        float hit_rate = simulate_fifo(frames);
+        float hit_rate = FIFO(frames);
         printf("%2d page frames  FIFO: %.4f\n", frames, hit_rate);
     }
 
