@@ -91,7 +91,8 @@ void generate_page_sequence() {
         if (count >= INSTRUCTION_NUM) break;
         page_sequence[count++] = (m + 1) / PAGE_SIZE;
         if (count >= INSTRUCTION_NUM) break;
-        int m2 = rand() % m;
+        // 修正：避免 m == 0
+        int m2 = (m == 0) ? 0 : rand() % m;
         page_sequence[count++] = m2 / PAGE_SIZE;
         if (count >= INSTRUCTION_NUM) break;
         page_sequence[count++] = (m2 + 1) / PAGE_SIZE;
